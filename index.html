@@ -1,23 +1,736 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Love Score ❤️</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>感情存摺</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#fff7f8;--card:#fff;--text:#302630;--muted:#8c7d87;--line:#f1dfe4;--pink:#ff6f91;--green:#56a77a}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}.wrap{max-width:900px;margin:auto;padding:28px 18px 50px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.brand{font-size:28px;font-weight:800}.sub,small{color:var(--muted)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 10px 30px #50233212}.score{text-align:center}.num{font-size:52px;font-weight:850}.bar{height:8px;background:#f5e8ec;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),#ff9eb5);border-radius:99px}.actions{display:flex;gap:10px;margin:18px 0}.btn{border:0;border-radius:14px;padding:12px 16px;font-weight:700;cursor:pointer}.primary{background:var(--pink);color:white}.secondary{background:#fff;border:1px solid var(--line)}.title{font-size:18px;font-weight:800;margin-bottom:10px}.event{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}.pts{font-weight:800}.plus{color:#c94f6d}.minus{color:var(--green)}.winner{text-align:center;font-weight:750;margin:12px}.modal{display:none;position:fixed;inset:0;background:#2d192359;align-items:center;justify-content:center;padding:18px}.modal.open{display:flex}.box{background:#fff;border-radius:22px;padding:22px;width:min(520px,100%)}label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}input,select,textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:12px;font:inherit}textarea{min-height:90px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.right{text-align:right;margin-top:15px}@media(max-width:680px){.grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
-</style></head>
-<body><div class="wrap">
-<div class="top"><div><div class="brand">Love Score ❤️</div><div class="sub">你們兩個人的「對錯帳簿」</div></div><button class="btn secondary" onclick="share()">🔗 分享</button></div>
-<div class="grid"><div class="card score"><small>CowCow</small><div class="num" id="s0">0</div><div class="bar"><i id="b0" style="width:50%"></i></div></div><div class="card score"><small>女朋友</small><div class="num" id="s1">0</div><div class="bar"><i id="b1" style="width:50%"></i></div></div></div>
-<div class="winner" id="winner">暫時打和 🤝</div><div class="actions"><button class="btn primary" onclick="openModal()">＋ 新增事件</button><button class="btn secondary" onclick="resetData()">重設示範資料</button></div>
-<div class="card"><div class="title">最近事件</div><div id="events"></div></div></div>
-<div class="modal" id="modal"><div class="box"><div class="title">新增事件 ❤️</div><div class="row"><div><label>誰</label><select id="who"><option value="0">CowCow</option><option value="1">女朋友</option></select></div><div><label>分數</label><select id="points"><option value="1">+1 小事</option><option value="3">+3 普通</option><option value="5">+5 大事</option><option value="-2">-2 做得好</option><option value="-5">-5 超級值得表揚</option></select></div></div><label>發生什麼事？</label><textarea id="desc" placeholder="例如：忘記買咖啡"></textarea><label>日期</label><input id="date" type="date"><div class="right"><button class="btn secondary" onclick="closeModal()">取消</button> <button class="btn primary" onclick="addEvent()">加入紀錄</button></div></div></div>
+  :root{
+    --cover: #5c1a28;
+    --cover-dark: #431320;
+    --gold: #c79a4b;
+    --gold-light: #e3c583;
+    --paper: #f4efe0;
+    --paper-line: #d8cfae;
+    --ink: #2a241a;
+    --ink-soft: #6b6151;
+    --right: #2c4a3b;
+    --right-bg: #e3ecdf;
+    --wrong: #8b2e2e;
+    --wrong-bg: #f3e0dc;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: #d9d2bd;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(0,0,0,0.03), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(0,0,0,0.03), transparent 40%);
+    font-family:'Noto Sans TC', sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    padding: 32px 16px 80px;
+  }
+  .passbook{
+    max-width: 620px;
+    margin: 0 auto;
+    background: var(--paper);
+    border-radius: 4px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.25), 0 2px 0 rgba(255,255,255,0.4) inset;
+    overflow: hidden;
+    position: relative;
+  }
+  .passbook::before{
+    content:"";
+    position:absolute; left:0; top:0; bottom:0; width:14px;
+    background: repeating-linear-gradient(180deg, rgba(0,0,0,0.08) 0 2px, transparent 2px 10px);
+  }
+
+  /* Cover */
+  .cover{
+    background: linear-gradient(160deg, var(--cover), var(--cover-dark));
+    color: var(--gold-light);
+    padding: 40px 36px 32px;
+    position: relative;
+    border-bottom: 6px solid var(--gold);
+  }
+  .cover::after{
+    content:"";
+    position:absolute; inset:10px;
+    border: 1px solid rgba(227,197,131,0.35);
+    pointer-events:none;
+  }
+  .cover-eyebrow{
+    font-family:'Roboto Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: rgba(227,197,131,0.7);
+    margin-bottom: 10px;
+  }
+  .cover-title{
+    font-family:'Noto Serif TC', serif;
+    font-weight: 900;
+    font-size: 40px;
+    letter-spacing: 4px;
+    margin: 0 0 18px;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.3);
+  }
+  .cover-names{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    font-family:'Noto Serif TC', serif;
+    font-size: 19px;
+    font-weight: 700;
+  }
+  .cover-names input{
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed rgba(227,197,131,0.5);
+    color: var(--gold-light);
+    font-family:'Noto Serif TC', serif;
+    font-weight: 700;
+    font-size: 19px;
+    width: 6.5em;
+    padding: 2px 2px;
+    outline: none;
+  }
+  .cover-names input:focus{ border-bottom-color: var(--gold-light); }
+  .cover-vs{ opacity:0.6; font-family:'Roboto Mono',monospace; font-size:14px; }
+  .cover-no{
+    margin-top: 22px;
+    font-family:'Roboto Mono', monospace;
+    font-size: 12px;
+    color: rgba(227,197,131,0.55);
+    letter-spacing: 1px;
+  }
+
+  /* Balance */
+  .balances{
+    display:flex;
+    background: var(--paper);
+    border-bottom: 1px solid var(--paper-line);
+  }
+  .balance{
+    flex:1;
+    padding: 24px 20px;
+    text-align:center;
+    position:relative;
+  }
+  .balance:first-child{ border-right: 1px dashed var(--paper-line); }
+  .balance-name{
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .balance-score{
+    font-family:'Roboto Mono', monospace;
+    font-weight: 700;
+    font-size: 40px;
+    line-height: 1;
+  }
+  .balance-score.pos{ color: var(--right); }
+  .balance-score.neg{ color: var(--wrong); }
+  .balance-score.zero{ color: var(--ink); }
+  .balance-sub{
+    margin-top:6px;
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-family:'Roboto Mono', monospace;
+  }
+
+  .lock-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 10px;
+    padding: 10px 28px;
+    background: #3c1019;
+    color: var(--gold-light);
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+  .lock-status{ opacity:0.9; }
+  .lock-actions{ display:flex; align-items:center; gap:12px; }
+  .lock-btn{
+    background: transparent;
+    border: 1px solid rgba(227,197,131,0.55);
+    color: var(--gold-light);
+    padding: 5px 13px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    cursor:pointer;
+    font-family:'Noto Sans TC', sans-serif;
+  }
+  .lock-btn:hover{ background: rgba(227,197,131,0.15); }
+  .change-pw-link{
+    background:none; border:none;
+    color: rgba(227,197,131,0.75);
+    font-size: 11px;
+    text-decoration: underline;
+    cursor:pointer;
+    padding:0;
+    font-family:'Noto Sans TC', sans-serif;
+  }
+  .locked-hide{ display:none !important; }
+  .locked-note{
+    padding: 18px 28px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    background: #eee7d3;
+    border-bottom: 1px solid var(--paper-line);
+    line-height: 1.6;
+  }
+  .cover-names input[readonly]{ cursor:default; }
+
+  /* Add entry */
+  .add-entry{
+    padding: 22px 28px 26px;
+    background: #eee7d3;
+    border-bottom: 1px solid var(--paper-line);
+  }
+  .add-entry h2{
+    font-family:'Noto Serif TC', serif;
+    font-size: 15px;
+    margin: 0 0 14px;
+    color: var(--ink);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .add-entry h2::before{
+    content:"";
+    width:6px; height:6px;
+    background: var(--gold);
+    display:inline-block;
+    transform: rotate(45deg);
+  }
+  .field-row{ display:flex; gap:10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .toggle-group{ display:flex; gap:8px; flex:1; min-width: 140px; }
+  .toggle-btn{
+    flex:1;
+    padding: 10px 8px;
+    border: 1.5px solid var(--paper-line);
+    background: var(--paper);
+    border-radius: 3px;
+    font-family:'Noto Sans TC', sans-serif;
+    font-size: 13px;
+    font-weight:500;
+    color: var(--ink-soft);
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  .toggle-btn.active-person{
+    border-color: var(--cover);
+    background: var(--cover);
+    color: var(--gold-light);
+  }
+  .toggle-btn.type-right.active-type{
+    border-color: var(--right);
+    background: var(--right-bg);
+    color: var(--right);
+    font-weight:700;
+  }
+  .toggle-btn.type-wrong.active-type{
+    border-color: var(--wrong);
+    background: var(--wrong-bg);
+    color: var(--wrong);
+    font-weight:700;
+  }
+  .points-row{ display:flex; align-items:center; gap:12px; margin-bottom: 12px; }
+  .points-label{ font-size: 13px; color: var(--ink-soft); white-space:nowrap; }
+  .points-stepper{ display:flex; align-items:center; border: 1.5px solid var(--paper-line); border-radius: 3px; background: var(--paper); overflow:hidden; }
+  .points-stepper button{
+    width: 32px; height: 34px;
+    border:none; background: #eee7d3; color: var(--ink);
+    font-size: 16px; font-weight:700; cursor:pointer;
+  }
+  .points-stepper button:hover{ background: var(--gold-light); }
+  .points-stepper input{
+    width: 46px; text-align:center; border:none; background:transparent;
+    font-family:'Roboto Mono', monospace; font-size: 15px; font-weight:700; color: var(--ink);
+    outline:none;
+  }
+  .desc-input, .date-input{
+    width:100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--paper-line);
+    border-radius: 3px;
+    background: var(--paper);
+    font-family:'Noto Sans TC', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+  }
+  .desc-input:focus, .date-input:focus{ border-color: var(--gold); }
+  .submit-row{ display:flex; align-items:center; gap:14px; margin-top: 14px; }
+  .stamp-btn{
+    position:relative;
+    border: 2px solid var(--wrong);
+    color: var(--wrong);
+    background: transparent;
+    font-family:'Noto Serif TC', serif;
+    font-weight: 900;
+    font-size: 15px;
+    letter-spacing: 2px;
+    padding: 10px 22px;
+    border-radius: 999px;
+    cursor: pointer;
+    transform: rotate(-3deg);
+    transition: transform .15s ease, background .15s ease, color .15s ease;
+  }
+  .stamp-btn:hover{ background: var(--wrong); color:#fff; transform: rotate(-3deg) scale(1.04); }
+  .stamp-btn:active{ transform: rotate(-3deg) scale(0.96); }
+  .stamp-btn.stamped{ animation: stampHit .35s ease; }
+  @keyframes stampHit{
+    0%{ transform: rotate(-3deg) scale(1.4); opacity:0.4; }
+    60%{ transform: rotate(-3deg) scale(0.9); opacity:1; }
+    100%{ transform: rotate(-3deg) scale(1); }
+  }
+  .form-hint{ font-size: 12px; color: var(--ink-soft); }
+
+  /* Ledger */
+  .ledger{ padding: 22px 0 8px; }
+  .ledger h2{
+    font-family:'Noto Serif TC', serif;
+    font-size: 15px;
+    margin: 0 0 4px;
+    padding: 0 28px;
+    color: var(--ink);
+  }
+  .ledger-empty{
+    padding: 30px 28px 40px;
+    text-align:center;
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    line-height:1.8;
+  }
+  .ledger-table{ width:100%; border-collapse: collapse; margin-top: 6px; }
+  .ledger-row{
+    border-top: 1px dashed var(--paper-line);
+  }
+  .ledger-row td{
+    padding: 12px 10px;
+    font-size: 13px;
+    vertical-align: top;
+  }
+  .ledger-row td:first-child{ padding-left: 28px; }
+  .ledger-row td:last-child{ padding-right: 20px; }
+  .col-date{
+    font-family:'Roboto Mono', monospace;
+    color: var(--ink-soft);
+    white-space:nowrap;
+    font-size: 12px;
+    padding-top: 14px !important;
+  }
+  .col-person{
+    font-weight: 700;
+    white-space: nowrap;
+    color: var(--ink);
+  }
+  .col-desc{ color: var(--ink); line-height:1.5; }
+  .col-mark{ text-align:center; white-space:nowrap; }
+  .mark-badge{
+    display:inline-block;
+    font-family:'Noto Serif TC', serif;
+    font-weight:900;
+    font-size: 13px;
+    padding: 3px 9px;
+    border-radius: 3px;
+    border: 1.5px solid currentColor;
+    transform: rotate(-6deg);
+  }
+  .mark-badge.right{ color: var(--right); background: var(--right-bg); }
+  .mark-badge.wrong{ color: var(--wrong); background: var(--wrong-bg); }
+  .col-del{ text-align:right; }
+  .del-btn{
+    background:none; border:none; cursor:pointer;
+    color: var(--ink-soft);
+    font-size: 12px;
+    text-decoration: underline;
+    font-family:'Noto Sans TC', sans-serif;
+    padding: 4px;
+  }
+  .del-btn:hover{ color: var(--wrong); }
+
+  .footer-bar{
+    padding: 16px 28px 22px;
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .footer-note{
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-family:'Roboto Mono', monospace;
+  }
+  .reset-btn{
+    background:none;
+    border: 1px solid var(--paper-line);
+    color: var(--ink-soft);
+    font-size: 11.5px;
+    padding: 6px 12px;
+    border-radius: 3px;
+    cursor:pointer;
+    font-family:'Noto Sans TC', sans-serif;
+  }
+  .reset-btn:hover{ border-color: var(--wrong); color: var(--wrong); }
+
+  .loading-state{
+    padding: 60px 28px;
+    text-align:center;
+    color: var(--ink-soft);
+    font-size: 13px;
+  }
+
+  @media (max-width: 480px){
+    .cover{ padding: 30px 22px 24px; }
+    .cover-title{ font-size: 30px; letter-spacing: 2px; }
+    .cover-names{ font-size: 15px; flex-wrap:wrap; }
+    .cover-names input{ font-size:15px; width:5em; }
+    .add-entry, .ledger h2{ padding-left: 18px; padding-right: 18px; }
+    .add-entry{ padding-left:18px; padding-right:18px; }
+    .ledger-row td:first-child{ padding-left: 18px; }
+    .ledger-row td:last-child{ padding-right: 12px; }
+    .balance-score{ font-size: 30px; }
+    .footer-bar{ padding-left: 18px; padding-right: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="passbook" id="passbook">
+  <div class="cover">
+    <div class="cover-eyebrow">RELATIONSHIP PASSBOOK · 感情存摺</div>
+    <h1 class="cover-title">感情存摺</h1>
+    <div class="cover-names">
+      <input id="nameA" maxlength="8" value="我" />
+      <span class="cover-vs">×</span>
+      <input id="nameB" maxlength="8" value="女朋友" />
+    </div>
+    <div class="cover-no" id="acctNo">No. 載入中...</div>
+  </div>
+
+  <div class="lock-bar">
+    <span class="lock-status" id="lockStatus">載入緊...</span>
+    <div class="lock-actions">
+      <button type="button" class="change-pw-link locked-hide" id="changePwBtn">更改密碼</button>
+      <button type="button" class="lock-btn" id="lockBtn">解鎖編輯</button>
+    </div>
+  </div>
+
+  <div class="locked-note locked-hide" id="lockedNote">
+    而家係<strong>檢視模式</strong>,可以睇晒所有記錄同分數,但只有持有密碼嗰位先可以新增或者刪除記錄。
+  </div>
+
+  <div class="balances">
+    <div class="balance">
+      <div class="balance-name" id="balNameA">我</div>
+      <div class="balance-score zero" id="scoreA">0</div>
+      <div class="balance-sub" id="subA">0 對 · 0 錯</div>
+    </div>
+    <div class="balance">
+      <div class="balance-name" id="balNameB">女朋友</div>
+      <div class="balance-score zero" id="scoreB">0</div>
+      <div class="balance-sub" id="subB">0 對 · 0 錯</div>
+    </div>
+  </div>
+
+  <div class="add-entry" id="addEntrySection">
+    <h2>新增一筆記錄</h2>
+    <div class="field-row">
+      <div class="toggle-group" id="personGroup">
+        <button type="button" class="toggle-btn active-person" data-person="a" id="btnPersonA">我</button>
+        <button type="button" class="toggle-btn" data-person="b" id="btnPersonB">女朋友</button>
+      </div>
+      <div class="toggle-group" id="typeGroup">
+        <button type="button" class="toggle-btn type-right active-type" data-type="right">✓ 對</button>
+        <button type="button" class="toggle-btn type-wrong" data-type="wrong">✕ 錯</button>
+      </div>
+    </div>
+    <div class="points-row">
+      <span class="points-label">呢件事值幾多分</span>
+      <div class="points-stepper">
+        <button type="button" id="pointsMinus">−</button>
+        <input type="text" id="pointsValue" value="1" inputmode="numeric" />
+        <button type="button" id="pointsPlus">+</button>
+      </div>
+    </div>
+    <div class="field-row" style="margin-bottom:8px;">
+      <input class="desc-input" id="descInput" type="text" placeholder="呢件事係咩事? (例如: 記得紀念日、講嘢冇禮貌...)" maxlength="120" />
+    </div>
+    <div class="field-row" style="margin-bottom:0;">
+      <input class="date-input" id="dateInput" type="date" style="max-width:180px;" />
+    </div>
+    <div class="submit-row">
+      <button class="stamp-btn" id="submitBtn">蓋 印</button>
+      <span class="form-hint" id="formHint">揀邊個、對定錯,寫低事件就可以蓋印</span>
+    </div>
+  </div>
+
+  <div class="ledger">
+    <h2>記錄</h2>
+    <div id="ledgerBody">
+      <div class="loading-state">存摺載入緊...</div>
+    </div>
+  </div>
+
+  <div class="footer-bar">
+    <span class="footer-note">連結分享 · 對方睇到,只有解鎖後先可以編輯</span>
+    <button class="reset-btn locked-hide" id="resetBtn">清空重設</button>
+  </div>
+</div>
+
 <script>
-const KEY='love-score-v1';let data=JSON.parse(localStorage.getItem(KEY)||'null')||[{who:0,points:2,desc:'忘記買咖啡',date:'2026-08-12'},{who:1,points:3,desc:'遲到 20 分鐘',date:'2026-08-11'},{who:0,points:-2,desc:'主動洗碗',date:'2026-08-10'}];
-const save=()=>localStorage.setItem(KEY,JSON.stringify(data));const esc=s=>s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-function render(){let s=[0,0];data.forEach(e=>s[e.who]+=e.points);s.forEach((x,i)=>document.getElementById('s'+i).textContent=x);let t=Math.max(1,Math.abs(s[0])+Math.abs(s[1]));s.forEach((x,i)=>document.getElementById('b'+i).style.width=Math.abs(x)/t*100+'%');document.getElementById('winner').textContent=s[0]==s[1]?'暫時打和 🤝':s[0]>s[1]?'CowCow 暫時領先 🔥':'女朋友暫時領先 🔥';document.getElementById('events').innerHTML=data.length?data.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(e=>`<div class="event"><div><b>${esc(e.desc)}</b><br><small>${e.date} · ${e.who?'女朋友':'CowCow'}</small></div><div class="pts ${e.points<0?'minus':'plus'}">${e.points>0?'+':''}${e.points}</div></div>`).join(''):'<div class="sub">暫時沒有紀錄</div>'}
-function openModal(){date.value=new Date().toISOString().slice(0,10);modal.classList.add('open')}function closeModal(){modal.classList.remove('open')}
-function addEvent(){let d=desc.value.trim();if(!d)return alert('請輸入事件');data.push({who:+who.value,points:+points.value,desc:d,date:date.value});save();desc.value='';closeModal();render()}
-function resetData(){if(confirm('確定重設示範資料？')){localStorage.removeItem(KEY);location.reload()}}
-function share(){navigator.clipboard?.writeText(location.href).then(()=>alert('已複製網站 Link。')).catch(()=>prompt('複製這條 Link：',location.href))}render();
-</script></body></html>
+(function(){
+  const NAMES_KEY = 'passbook:names';
+  const ENTRIES_KEY = 'passbook:entries';
+  const PWHASH_KEY = 'passbook:pwhash';
+
+  let names = { a: '我', b: '女朋友' };
+  let entries = [];
+  let selectedPerson = 'a';
+  let selectedType = 'right';
+  let pwHash = null;      // stored password hash (null = no password set yet)
+  let unlocked = false;   // whether THIS session can edit
+
+  const $ = (id) => document.getElementById(id);
+  const nameAInput = $('nameA');
+  const nameBInput = $('nameB');
+  const acctNo = $('acctNo');
+  const balNameA = $('balNameA');
+  const balNameB = $('balNameB');
+  const scoreA = $('scoreA');
+  const scoreB = $('scoreB');
+  const subA = $('subA');
+  const subB = $('subB');
+  const btnPersonA = $('btnPersonA');
+  const btnPersonB = $('btnPersonB');
+  const typeGroup = $('typeGroup');
+  const descInput = $('descInput');
+  const dateInput = $('dateInput');
+  const pointsValue = $('pointsValue');
+  const pointsMinus = $('pointsMinus');
+  const pointsPlus = $('pointsPlus');
+  const submitBtn = $('submitBtn');
+  const formHint = $('formHint');
+  const ledgerBody = $('ledgerBody');
+  const resetBtn = $('resetBtn');
+
+  function todayStr(){
+    const d = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+  dateInput.value = todayStr();
+
+  function acctNumber(){
+    const a = (names.a || '我').slice(0,2);
+    const b = (names.b || '女朋友').slice(0,2);
+    return `${a}·${b}-${String(entries.length).padStart(4,'0')}`;
+  }
+
+  function renderNames(){
+    nameAInput.value = names.a;
+    nameBInput.value = names.b;
+    balNameA.textContent = names.a;
+    balNameB.textContent = names.b;
+    btnPersonA.textContent = names.a;
+    btnPersonB.textContent = names.b;
+    acctNo.textContent = 'No. ' + acctNumber();
+  }
+
+  function renderScores(){
+    let a = 0, b = 0, aRight=0, aWrong=0, bRight=0, bWrong=0;
+    entries.forEach(e => {
+      const pts = Number(e.points) > 0 ? Number(e.points) : 1;
+      const delta = e.type === 'right' ? pts : -pts;
+      if(e.person === 'a'){
+        a += delta;
+        if(e.type==='right') aRight++; else aWrong++;
+      } else {
+        b += delta;
+        if(e.type==='right') bRight++; else bWrong++;
+      }
+    });
+    scoreA.textContent = (a > 0 ? '+' : '') + a;
+    scoreB.textContent = (b > 0 ? '+' : '') + b;
+    scoreA.className = 'balance-score ' + (a > 0 ? 'pos' : a < 0 ? 'neg' : 'zero');
+    scoreB.className = 'balance-score ' + (b > 0 ? 'pos' : b < 0 ? 'neg' : 'zero');
+    subA.textContent = `${aRight} 對 · ${aWrong} 錯`;
+    subB.textContent = `${bRight} 對 · ${bWrong} 錯`;
+  }
+
+  function renderLedger(){
+    if(!entries.length){
+      ledgerBody.innerHTML = '<div class="ledger-empty">存摺仲未有記錄。<br>寫低第一件事,蓋個印開始記低啦。</div>';
+      return;
+    }
+    const sorted = [...entries].sort((x,y) => (y.ts||0) - (x.ts||0));
+    let rows = sorted.map(e => {
+      const personName = e.person === 'a' ? names.a : names.b;
+      const pts = Number(e.points) > 0 ? Number(e.points) : 1;
+      const markClass = e.type === 'right' ? 'right' : 'wrong';
+      const markText = (e.type === 'right' ? '✓ 對 +' : '✕ 錯 −') + pts;
+      const safeDesc = (e.desc || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const safeName = (personName || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return `<tr class="ledger-row" data-id="${e.id}">
+        <td class="col-date">${e.date || ''}</td>
+        <td class="col-person">${safeName}</td>
+        <td class="col-desc">${safeDesc}</td>
+        <td class="col-mark"><span class="mark-badge ${markClass}">${markText}</span></td>
+        <td class="col-del"><button class="del-btn" data-id="${e.id}">刪除</button></td>
+      </tr>`;
+    }).join('');
+    ledgerBody.innerHTML = `<table class="ledger-table"><tbody>${rows}</tbody></table>`;
+
+    ledgerBody.querySelectorAll('.del-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        entries = entries.filter(e => e.id !== id);
+        renderScores();
+        renderLedger();
+        renderNames();
+        await saveEntries();
+      });
+    });
+  }
+
+  async function loadAll(){
+    try{
+      const n = await window.storage.get(NAMES_KEY, true);
+      if(n && n.value){
+        try { names = JSON.parse(n.value); } catch(e){}
+      }
+    }catch(e){ /* key not found yet, keep defaults */ }
+
+    try{
+      const en = await window.storage.get(ENTRIES_KEY, true);
+      if(en && en.value){
+        try { entries = JSON.parse(en.value); } catch(e){ entries = []; }
+      }
+    }catch(e){ entries = []; }
+
+    renderNames();
+    renderScores();
+    renderLedger();
+  }
+
+  async function saveNames(){
+    try{
+      await window.storage.set(NAMES_KEY, JSON.stringify(names), true);
+    }catch(e){ console.error('儲存名稱失敗', e); }
+  }
+
+  async function saveEntries(){
+    try{
+      await window.storage.set(ENTRIES_KEY, JSON.stringify(entries), true);
+    }catch(e){
+      console.error('儲存記錄失敗', e);
+      formHint.textContent = '儲存失敗,請再試一次';
+    }
+  }
+
+  let nameSaveTimer;
+  function onNameEdit(){
+    names.a = nameAInput.value.trim() || '我';
+    names.b = nameBInput.value.trim() || '女朋友';
+    renderNames();
+    renderScores();
+    renderLedger();
+    clearTimeout(nameSaveTimer);
+    nameSaveTimer = setTimeout(saveNames, 500);
+  }
+  nameAInput.addEventListener('input', onNameEdit);
+  nameBInput.addEventListener('input', onNameEdit);
+
+  btnPersonA.addEventListener('click', () => {
+    selectedPerson = 'a';
+    btnPersonA.classList.add('active-person');
+    btnPersonB.classList.remove('active-person');
+  });
+  btnPersonB.addEventListener('click', () => {
+    selectedPerson = 'b';
+    btnPersonB.classList.add('active-person');
+    btnPersonA.classList.remove('active-person');
+  });
+
+  function clampPoints(v){
+    let n = parseInt(v, 10);
+    if(isNaN(n)) n = 1;
+    if(n < 1) n = 1;
+    if(n > 99) n = 99;
+    return n;
+  }
+  pointsMinus.addEventListener('click', () => {
+    pointsValue.value = clampPoints(pointsValue.value) - 1 < 1 ? 1 : clampPoints(pointsValue.value) - 1;
+  });
+  pointsPlus.addEventListener('click', () => {
+    pointsValue.value = clampPoints(pointsValue.value) + 1;
+  });
+  pointsValue.addEventListener('change', () => {
+    pointsValue.value = clampPoints(pointsValue.value);
+  });
+
+  typeGroup.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedType = btn.getAttribute('data-type');
+      typeGroup.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-type'));
+      btn.classList.add('active-type');
+    });
+  });
+
+  submitBtn.addEventListener('click', async () => {
+    const desc = descInput.value.trim();
+    if(!desc){
+      formHint.textContent = '請寫低發生咗咩事先';
+      descInput.focus();
+      return;
+    }
+    const entry = {
+      id: 'e' + Date.now() + Math.random().toString(36).slice(2,7),
+      person: selectedPerson,
+      type: selectedType,
+      points: clampPoints(pointsValue.value),
+      desc: desc,
+      date: dateInput.value || todayStr(),
+      ts: Date.now()
+    };
+    entries.push(entry);
+    renderScores();
+    renderLedger();
+    renderNames();
+    descInput.value = '';
+    pointsValue.value = '1';
+    formHint.textContent = '蓋印成功,已經記低咗';
+    submitBtn.classList.remove('stamped');
+    void submitBtn.offsetWidth;
+    submitBtn.classList.add('stamped');
+    await saveEntries();
+    setTimeout(() => { formHint.textContent = '揀邊個、對定錯,寫低事件就可以蓋印'; }, 2500);
+  });
+
+  descInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') submitBtn.click();
+  });
+
+  resetBtn.addEventListener('click', async () => {
+    if(!confirm('確定要清空所有記錄?呢個動作對方都會見到,而且冇得返轉頭。')) return;
+    entries = [];
+    renderScores();
+    renderLedger();
+    renderNames();
+    await saveEntries();
+  });
+
+  loadAll();
+})();
+</script>
+
+</body>
+</html>
